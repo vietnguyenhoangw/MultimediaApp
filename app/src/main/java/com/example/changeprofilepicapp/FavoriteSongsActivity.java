@@ -8,7 +8,10 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -24,6 +27,9 @@ import com.example.changeprofilepicapp.object.Datum;
 import com.example.changeprofilepicapp.object.Song;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.squareup.picasso.Picasso;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class FavoriteSongsActivity extends AppCompatActivity {
 
@@ -37,10 +43,19 @@ public class FavoriteSongsActivity extends AppCompatActivity {
 
     ImageView play;
 
+    CircleImageView imageView;
+    TextView tvSongname, tvArtists;
+
+    Animation rotateAnimation;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favorite_songs);
+
+        imageView = findViewById(R.id.image);
+        tvSongname = findViewById(R.id.tvNameSong);
+        tvArtists = findViewById(R.id.tvArtists);
 
         recyclerView = findViewById(R.id.rcv);
         arrayList = new ArrayList<>();
@@ -53,10 +68,21 @@ public class FavoriteSongsActivity extends AppCompatActivity {
         songAdapter = new SongAdapter(this, arrayList, R.layout.song_item);
         recyclerView.setAdapter(songAdapter);
 
+        rotateAnimation = AnimationUtils.loadAnimation(FavoriteSongsActivity.this, R.anim.rotate_anim);
+
         songAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(View itemView, int position) {
-                playFileInternet();
+                Datum datum = arrayList.get(position);
+
+                tvSongname.setText(datum.getTitle());
+                tvArtists.setText(datum.getArtist().getName());
+
+                Picasso.get()
+                        .load(datum.getAlbum().getCover())
+                        .into(imageView);
+
+                imageView.startAnimation(rotateAnimation);
             }
         });
 
@@ -65,6 +91,8 @@ public class FavoriteSongsActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 mediaPlayer.pause();
+
+                rotateAnimation.cancel();
             }
         });
     }
@@ -93,6 +121,7 @@ public class FavoriteSongsActivity extends AppCompatActivity {
         requestQueue.add(stringRequest);
     }
 
+    // chua sai duoc
     private void playFileInternet() {
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
