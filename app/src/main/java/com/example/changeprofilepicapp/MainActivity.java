@@ -16,6 +16,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import org.michaelbel.bottomsheet.BottomSheet;
@@ -27,6 +28,8 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 
 public class MainActivity extends AppCompatActivity {
+
+    LinearLayout ln_item;
 
     CircleImageView profileImage;
 
@@ -46,6 +49,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 bottomSheet();
+            }
+        });
+
+        ln_item = findViewById(R.id.fvr_songs);
+        ln_item.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, FavoriteSongsActivity.class);
+
+                startActivity(intent);
             }
         });
     }
