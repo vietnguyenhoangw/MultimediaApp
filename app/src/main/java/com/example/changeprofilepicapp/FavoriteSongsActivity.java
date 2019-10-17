@@ -4,8 +4,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import com.android.volley.Request;
@@ -25,7 +31,11 @@ public class FavoriteSongsActivity extends AppCompatActivity {
     SongAdapter songAdapter;
     ArrayList<Datum> arrayList;
 
+    static MediaPlayer mediaPlayer = new MediaPlayer();
+
     String url = "https://api.deezer.com/search?redirect_uri=http%253A%252F%252Fguardian.mashape.com%252Fcallback&q=post%20malone&index=25";
+
+    ImageView play;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +52,21 @@ public class FavoriteSongsActivity extends AppCompatActivity {
 
         songAdapter = new SongAdapter(this, arrayList, R.layout.song_item);
         recyclerView.setAdapter(songAdapter);
+
+        songAdapter.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(View itemView, int position) {
+                playFileInternet();
+            }
+        });
+
+        play = findViewById(R.id.playorpause);
+        play.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mediaPlayer.pause();
+            }
+        });
     }
 
     private void getSongs() {
@@ -66,5 +91,31 @@ public class FavoriteSongsActivity extends AppCompatActivity {
         });
 
         requestQueue.add(stringRequest);
+    }
+
+    private void playFileInternet() {
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
+        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mediaPlayer) {
+                mediaPlayer.start();
+            }
+        });
+
+        mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
+                return false;
+            }
+        });
+
+        try {
+            mediaPlayer.setDataSource("https://cdns-preview-c.dzcdn.net/stream/c-cb5f9905d5b5dd3c76e2b59ace395fd3-3.mp3");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        mediaPlayer.prepareAsync();
     }
 }

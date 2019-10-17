@@ -21,6 +21,12 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.VH> {
     ArrayList<Datum> arrayList;
     int layout;
 
+    private static OnItemClickListener listener;
+
+    public static void setOnItemClickListener(OnItemClickListener listener) {
+        SongAdapter.listener = listener;
+    }
+
     public SongAdapter(Context context, ArrayList<Datum> arrayList, int layout) {
         this.context = context;
         this.arrayList = arrayList;
@@ -37,7 +43,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.VH> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull VH holder, int position) {
+    public void onBindViewHolder(@NonNull VH holder, final int position) {
         Datum datum = arrayList.get(position);
 
         holder.song.setText(datum.getTitle());
@@ -47,6 +53,15 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.VH> {
         Picasso.get()
                 .load(datum.getAlbum().getCover())
                 .into(holder.imageView);
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (listener != null) {
+                    listener.onItemClick(view, position);
+                }
+            }
+        });
     }
 
     @Override
