@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -18,6 +19,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+
+import com.suke.widget.SwitchButton;
 
 import org.michaelbel.bottomsheet.BottomSheet;
 
@@ -38,12 +41,17 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST = 1000;
     private File photoFile;
 
+    MediaPlayer mediaPlayer;
+    com.suke.widget.SwitchButton bgMusicSwitch;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         profileImage = findViewById(R.id.profile_image);
+
+
 
         profileImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,6 +66,21 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, FavoriteSongsActivity.class);
                 startActivity(intent);
+            }
+        });
+
+        bgMusicSwitch = findViewById(R.id.switch_button);
+        bgMusicSwitch.setOnCheckedChangeListener(new SwitchButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(SwitchButton view, boolean isChecked) {
+                if (isChecked == true) {
+                    mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.solo_music);
+
+                    playRawAudio();
+                }
+                else {
+                    stopRawAudio();
+                }
             }
         });
     }
@@ -234,6 +257,24 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
+        }
+    }
+
+    /*
+       play and stop background music
+     */
+    private void playRawAudio() {
+        MediaPlayer.create(this, R.raw.solo_music);
+
+        mediaPlayer.setLooping(true);
+        mediaPlayer.start();
+    }
+
+    private void stopRawAudio() {
+        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+            mediaPlayer = null;
         }
     }
 }
