@@ -49,9 +49,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        bgMusicSwitch = findViewById(R.id.switch_button);
         profileImage = findViewById(R.id.profile_image);
-
-
 
         profileImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,23 +63,18 @@ public class MainActivity extends AppCompatActivity {
         ln_item.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                stopRawAudio();
+
                 Intent intent = new Intent(MainActivity.this, FavoriteSongsActivity.class);
                 startActivity(intent);
             }
         });
 
-        bgMusicSwitch = findViewById(R.id.switch_button);
+
         bgMusicSwitch.setOnCheckedChangeListener(new SwitchButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(SwitchButton view, boolean isChecked) {
-                if (isChecked == true) {
-                    mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.solo_music);
-
-                    playRawAudio();
-                }
-                else {
-                    stopRawAudio();
-                }
+                mediaPlayCheck();
             }
         });
     }
@@ -276,5 +270,25 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.release();
             mediaPlayer = null;
         }
+    }
+
+    // check switch button music is checked
+
+    private void mediaPlayCheck() {
+        if (bgMusicSwitch.isChecked()) {
+            mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.solo_music);
+
+            playRawAudio();
+        }
+        else {
+            stopRawAudio();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        mediaPlayCheck();
     }
 }

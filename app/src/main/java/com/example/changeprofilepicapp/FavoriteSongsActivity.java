@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -37,9 +38,7 @@ public class FavoriteSongsActivity extends AppCompatActivity {
     SongAdapter songAdapter;
     ArrayList<Datum> arrayList;
 
-    static MediaPlayer mediaPlayer = new MediaPlayer();
-
-    String url = "https://api.deezer.com/search?redirect_uri=http%253A%252F%252Fguardian.mashape.com%252Fcallback&q=post%20malone&index=25";
+    String url = "https://api.deezer.com/search?redirect_uri=http%253A%252F%252Fguardian.mashape.com%252Fcallback&q=post%20malone&index=0";
 
     ImageView play;
 
@@ -48,10 +47,14 @@ public class FavoriteSongsActivity extends AppCompatActivity {
 
     Animation rotateAnimation;
 
+    MediaPlayer mediaPlayer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favorite_songs);
+
+        play = findViewById(R.id.playorpause);
 
         imageView = findViewById(R.id.image);
         tvSongname = findViewById(R.id.tvNameSong);
@@ -83,18 +86,50 @@ public class FavoriteSongsActivity extends AppCompatActivity {
                         .into(imageView);
 
                 imageView.startAnimation(rotateAnimation);
+
+                if (mediaPlayer == null) {
+                    mediaPlayer = new MediaPlayer();
+                    mediaPlayer.isLooping();
+                    playFileInternet(datum.getPreview());
+
+                    play.setImageResource(R.drawable.ic_pause_circle_outline_24dp);
+                }
+                else {
+                    stopAudio();
+
+                    mediaPlayer = new MediaPlayer();
+                    mediaPlayer.isLooping();
+                    playFileInternet(datum.getPreview());
+
+                    play.setImageResource(R.drawable.ic_pause_circle_outline_24dp);
+
+                }
             }
         });
 
-        play = findViewById(R.id.playorpause);
         play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mediaPlayer.pause();
-
-                rotateAnimation.cancel();
+                if (mediaPlayer == null) {
+                    Toast.makeText(FavoriteSongsActivity.this, "Pick up a song.", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    if (mediaPlayer.isPlaying()) {
+                        play.setImageResource(R.drawable.ic_play_circle_outline_24dp);
+                        rotateAnimation.cancel();
+                        stopAudio();
+                    }
+                }
             }
         });
+    }
+
+    private void stopAudio() {
+        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
     }
 
     private void getSongs() {
@@ -121,8 +156,7 @@ public class FavoriteSongsActivity extends AppCompatActivity {
         requestQueue.add(stringRequest);
     }
 
-    // chua sai duoc
-    private void playFileInternet() {
+    private void playFileInternet(String url) {
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
         mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -140,11 +174,13 @@ public class FavoriteSongsActivity extends AppCompatActivity {
         });
 
         try {
-            mediaPlayer.setDataSource("https://cdns-preview-c.dzcdn.net/stream/c-cb5f9905d5b5dd3c76e2b59ace395fd3-3.mp3");
+            mediaPlayer.setDataSource(url);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         mediaPlayer.prepareAsync();
     }
+
+
 }
