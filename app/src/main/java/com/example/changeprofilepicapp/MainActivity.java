@@ -74,7 +74,14 @@ public class MainActivity extends AppCompatActivity {
         bgMusicSwitch.setOnCheckedChangeListener(new SwitchButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(SwitchButton view, boolean isChecked) {
-                mediaPlayCheck();
+                if (bgMusicSwitch.isChecked()) {
+                    mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.solo_music);
+
+                    playRawAudio();
+                }
+                else {
+                    stopRawAudio();
+                }
             }
         });
     }
@@ -275,13 +282,23 @@ public class MainActivity extends AppCompatActivity {
     // check switch button music is checked
 
     private void mediaPlayCheck() {
-        if (bgMusicSwitch.isChecked()) {
-            mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.solo_music);
-
-            playRawAudio();
+        if (mediaPlayer == null) {
+            return;
         }
         else {
-            stopRawAudio();
+            if (mediaPlayer.isPlaying()) {
+                return;
+            }
+            else {
+                if (bgMusicSwitch.isChecked()) {
+                    mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.solo_music);
+
+                    playRawAudio();
+                }
+                else {
+                    stopRawAudio();
+                }
+            }
         }
     }
 

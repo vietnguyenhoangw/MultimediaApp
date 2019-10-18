@@ -40,7 +40,7 @@ public class FavoriteSongsActivity extends AppCompatActivity {
 
     String url = "https://api.deezer.com/search?redirect_uri=http%253A%252F%252Fguardian.mashape.com%252Fcallback&q=post%20malone&index=0";
 
-    ImageView play;
+    ImageView play, next, previous;
 
     CircleImageView imageView;
     TextView tvSongname, tvArtists;
@@ -49,61 +49,22 @@ public class FavoriteSongsActivity extends AppCompatActivity {
 
     MediaPlayer mediaPlayer;
 
+    static int musicIsPlaying;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favorite_songs);
 
-        play = findViewById(R.id.playorpause);
-
-        imageView = findViewById(R.id.image);
-        tvSongname = findViewById(R.id.tvNameSong);
-        tvArtists = findViewById(R.id.tvArtists);
-
-        recyclerView = findViewById(R.id.rcv);
-        arrayList = new ArrayList<>();
-
-        getSongs();
-
-        LinearLayoutManager linearLayout = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        recyclerView.setLayoutManager(linearLayout);
-
-        songAdapter = new SongAdapter(this, arrayList, R.layout.song_item);
-        recyclerView.setAdapter(songAdapter);
+        creategWidget();
+        recycleViewSetup();
 
         rotateAnimation = AnimationUtils.loadAnimation(FavoriteSongsActivity.this, R.anim.rotate_anim);
 
         songAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(View itemView, int position) {
-                Datum datum = arrayList.get(position);
-
-                tvSongname.setText(datum.getTitle());
-                tvArtists.setText(datum.getArtist().getName());
-
-                Picasso.get()
-                        .load(datum.getAlbum().getCover())
-                        .into(imageView);
-
-                imageView.startAnimation(rotateAnimation);
-
-                if (mediaPlayer == null) {
-                    mediaPlayer = new MediaPlayer();
-                    mediaPlayer.isLooping();
-                    playFileInternet(datum.getPreview());
-
-                    play.setImageResource(R.drawable.ic_pause_circle_outline_24dp);
-                }
-                else {
-                    stopAudio();
-
-                    mediaPlayer = new MediaPlayer();
-                    mediaPlayer.isLooping();
-                    playFileInternet(datum.getPreview());
-
-                    play.setImageResource(R.drawable.ic_pause_circle_outline_24dp);
-
-                }
+                recycleViewItemClick(position);
             }
         });
 
@@ -122,6 +83,95 @@ public class FavoriteSongsActivity extends AppCompatActivity {
                 }
             }
         });
+
+        next.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mediaPlayer == null) {
+                    return;
+                }
+                else {
+                    musicIsPlaying += 1;
+                    playAudioFromList(musicIsPlaying);
+                }
+            }
+        });
+
+        previous.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mediaPlayer == null) {
+                    return;
+                }
+                else {
+                    if (musicIsPlaying > 0) {
+                        musicIsPlaying -= 1;
+                        playAudioFromList(musicIsPlaying);
+                    }
+                }
+            }
+        });
+    }
+
+    private void creategWidget() {
+        play = findViewById(R.id.playorpause);
+        imageView = findViewById(R.id.image);
+        tvSongname = findViewById(R.id.tvNameSong);
+        tvArtists = findViewById(R.id.tvArtists);
+        next = findViewById(R.id.next);
+        previous = findViewById(R.id.previous);
+    }
+
+    private void recycleViewSetup() {
+        recyclerView = findViewById(R.id.rcv);
+        arrayList = new ArrayList<>();
+
+        getSongs();
+
+        LinearLayoutManager linearLayout = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        recyclerView.setLayoutManager(linearLayout);
+
+        songAdapter = new SongAdapter(this, arrayList, R.layout.song_item);
+        recyclerView.setAdapter(songAdapter);
+    }
+
+    private void recycleViewItemClick(int position) {
+        musicIsPlaying = position;
+
+        playAudioFromList(position);
+    }
+
+    private void playAudioFromList(int position) {
+        Datum datum = arrayList.get(position);
+
+        tvSongname.setText(datum.getTitle());
+        tvArtists.setText(datum.getArtist().getName());
+
+        Picasso.get()
+                .load(datum.getAlbum().getCover())
+                .into(imageView);
+
+        imageView.startAnimation(rotateAnimation);
+
+        if (mediaPlayer == null) {
+            mediaPlayer = new MediaPlayer();
+            playFileInternet(datum.getPreview());
+            mediaPlayer.isLooping();
+
+            play.setImageResource(R.drawable.ic_stop_24dp);
+        }
+        else {
+            mediaPlayer.stop();
+
+            mediaPlayer = new MediaPlayer();
+            playFileInternet(datum.getPreview());
+            mediaPlayer.isLooping();
+
+
+
+            play.setImageResource(R.drawable.ic_stop_24dp);
+
+        }
     }
 
     private void stopAudio() {
@@ -129,6 +179,11 @@ public class FavoriteSongsActivity extends AppCompatActivity {
             mediaPlayer.stop();
             mediaPlayer.release();
             mediaPlayer = null;
+
+            tvSongname.setText("Song name");
+            tvArtists.setText("Artist");
+
+            imageView.setImageResource(R.mipmap.ic_none);
         }
     }
 
